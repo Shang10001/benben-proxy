@@ -30,6 +30,12 @@ app.post('/proxy', async (req, res) => {
     return res.status(400).json({ error: 'Missing X-Target-URL header' });
   }
 
+  // DEBUG
+  const bodyLen = req.body ? req.body.length : 0;
+  console.log(`[DEBUG] ${realMethod} ${targetUrl}`);
+  console.log(`[DEBUG] body length: ${bodyLen}, content-type: ${req.headers['content-type']}`);
+  console.log(`[DEBUG] body type: ${typeof req.body}, isBuffer: ${Buffer.isBuffer(req.body)}`);
+
   // 只转发必要的头到 WebDAV 服务器
   const fwdHeaders = {};
   if (req.headers.authorization)   fwdHeaders['Authorization']  = req.headers.authorization;
@@ -46,6 +52,9 @@ app.post('/proxy', async (req, res) => {
 
     const upstream = await fetch(targetUrl, opts);
     const data = await upstream.arrayBuffer();
+
+    // DEBUG
+    console.log(`[DEBUG] upstream status: ${upstream.status}, response size: ${data.byteLength}`);
 
     // 转发上游的 Content-Type
     const ct = upstream.headers.get('content-type');
